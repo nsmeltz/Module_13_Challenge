@@ -49,14 +49,11 @@ let overlays = {
 L.control.layers(baseMaps, overlays).addTo(map);
 
 // --------------------------------- Add GeoJSON data to the map ---------------------------
-// Link EQ geoJSON
-var earthquakesLast7days = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
-var majorEQlast7days = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson"
-
 // Create earthquakes layer from geoJSON data
+let earthquakesLast7days = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 d3.json(earthquakesLast7days).then(function(data) {
   L.geoJSON(data, {
-    // We turn each feature into a circleMarker on the map.
+    // Plot a circleMarker for each entry 
     pointToLayer: function(feature, latlng) {
       return L.circleMarker(latlng);
     },
@@ -91,9 +88,9 @@ d3.json(earthquakesLast7days).then(function(data) {
 
 });
 
-// 3. Use d3.json to make a call to get our Tectonic Plate geoJSON data.
+// Create Tectonic Plates layer from geoJSON data
 let plateBoundaries = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
-let plateNames = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_plates.json"
+
 d3.json(plateBoundaries).then(function(data) {
 
   L.geoJSON(data, {
@@ -106,10 +103,48 @@ d3.json(plateBoundaries).then(function(data) {
 
 });
 
+// Create Major Earthquakes layer from geoJSON data
+var majorEQlast7days = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson"
+
+d3.json(majorEQlast7days).then(function(data) {
+  L.geoJSON(data, {
+    // Plot a circleMarker for each entry 
+    pointToLayer: function(feature, latlng) {
+      return L.circleMarker(latlng);
+    },
+    // Style the circleMarkers
+    style: styleMajor,
+
+    // Add a popup with info about each circleMarker
+    onEachFeature: function(feature,layer) {
+      layer.bindPopup("<h3>Magnitude: " + feature.properties.mag + "</h3><hr>Location: " + feature.properties.place)
+    }
+  // Add to the overlay   
+  }).addTo(majorEQ);
+
+  // Create a legend control object.
+  let legend = L.control({position: 'bottomright'});
+  legend.onAdd = function () {
+    let div = L.DomUtil.create('div', 'info legend')
+      const magnitudes = [ 0, 5, 6];
+      const colors = ["#ee9c00","#ea822c","#ea2c2c"];
+    // Looping through our intervals to generate a label with a colored square for each interval.
+   for (var i = 0; i < magnitudes.length; i++) {
+     console.log(colors[i]);
+     div.innerHTML += "<i style='background: " + colors[i] + "'></i> " + magnitudes[i] + (magnitudes[i + 1] ? "&ndash;" + magnitudes[i + 1] + "<br>" : "+");
+    }
+    return div;
+  };
+
+  // Add legend to the map
+  legend.addTo(map);
+
+});
+
+
 // ---------------------------- Style the plotted data ---------------------
 
-// This function returns the style data for each of the earthquakes we plot on the map. 
-// We pass the magnitude of the earthquake into two separate functions to calculate the color and radius.
+// --- Style Earthquakes layer ---
 function styleInfo(feature) {
   return {
     opacity: 1,
@@ -121,8 +156,8 @@ function styleInfo(feature) {
     weight: 0.5
   };
 }
-// This function determines the radius of the earthquake marker based on its magnitude.
-// Earthquakes with a magnitude of 0 will be plotted with a radius of 1.
+
+// Radius as function of magnitude
 function getRadius(magnitude) {
   if (magnitude === 0) {
     return 1;
@@ -130,7 +165,7 @@ function getRadius(magnitude) {
   return magnitude * 4;
 }
 
-// This function determines the color of the circle based on the magnitude of the earthquake.
+// Color as function of magnitude
 function getColor(magnitude) {
   if (magnitude > 5) {
     return "#ea2c2c";
@@ -148,4 +183,31 @@ function getColor(magnitude) {
     return "#d4ee00";
   }
   return "#98ee00";
+}
+
+// --- Major EQ styling ---
+function styleMajor(feature) {
+  return {
+    opacity: 1,
+    fillOpacity: 1,
+    fillColor: getColorMajor(feature.properties.mag),
+    color: "#000000",
+    radius: getRadius(feature.properties.mag),
+    stroke: true,
+    weight: 0.5
+  };
+}
+
+
+// Najor EQ Color as function of magnitude
+function getColorMajor(magnitude) {
+  if (magnitude > 6) {
+    return "#ea2c2c";
+  }
+  if (magnitude > 5) {
+    return "#ea822c";
+  }
+  if (magnitude < 5) {
+    return "#ee9c00";
+  }
 }
