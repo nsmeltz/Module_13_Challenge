@@ -143,7 +143,7 @@ legend.onAdd = function() {
 
   const magnitudes = [0, 1, 2, 3, 4, 5];
   const colors = [
-    "#98ee00",
+    "blue",
     "#d4ee00",
     "#eecc00",
     "#ee9c00",
