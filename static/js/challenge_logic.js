@@ -17,6 +17,13 @@ attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap
     accessToken: API_KEY
 });
 
+// Create dark basemap tile layer
+let dark = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/dark-v10/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>',
+    maxZoom: 18,
+    accessToken: API_KEY
+});
+
 // ------------------ Create the map object with center, zoom level and default layer ---------------------------
 let map = L.map('mapid', {
 	center: [40.7, -94.5],
@@ -27,7 +34,8 @@ let map = L.map('mapid', {
 // ------------- Create a base layer that holds all maps --------------
 let baseMaps = {
   "Streets": streets,
-  "Satellite Streets": satelliteStreets
+  "Satellite Streets": satelliteStreets,
+  "Dark": dark
 };
 
 
@@ -41,11 +49,10 @@ let majorEQ = new L.LayerGroup();
 let overlays = {
   "Earthquakes": earthquakes,
   "Tectonic Plates": tectonicPlates,
-  " Major Earthquakes": majorEQ
+  "Major Earthquakes": majorEQ
 };
 
-// Then we add a control to the map that will allow the user to change which
-// layers are visible.
+// ----------------- Layer Control -------------------
 L.control.layers(baseMaps, overlays).addTo(map);
 
 // --------------------------------- Add GeoJSON data to the map ---------------------------
@@ -127,7 +134,7 @@ d3.json(majorEQlast7days).then(function(data) {
   legend.onAdd = function () {
     let div = L.DomUtil.create('div', 'info legend')
       const magnitudes = [ 0, 5, 6];
-      const colors = ["#ee9c00","#ea822c","#ea2c2c"];
+      const colors = ["MediumPurple","DeepPink","red"];
     // Looping through our intervals to generate a label with a colored square for each interval.
    for (var i = 0; i < magnitudes.length; i++) {
      console.log(colors[i]);
@@ -202,12 +209,12 @@ function styleMajor(feature) {
 // Najor EQ Color as function of magnitude
 function getColorMajor(magnitude) {
   if (magnitude > 6) {
-    return "#ea2c2c";
+    return "red";
   }
-  if (magnitude > 5) {
-    return "#ea822c";
+  if (magnitude >= 5) {
+    return "DeepPink";
   }
   if (magnitude < 5) {
-    return "#ee9c00";
+    return "MediumPurple";
   }
 }
