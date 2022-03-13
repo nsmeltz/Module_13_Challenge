@@ -46,14 +46,18 @@ let tectonicPlates = new L.LayerGroup();
 let majorEQ = new L.LayerGroup();
 
 // 2. Add a reference to the tectonic plates group to the overlays object.
-let overlays = {
+let overlayMaps = {
   "Earthquakes": earthquakes,
   "Tectonic Plates": tectonicPlates,
   "Major Earthquakes": majorEQ
 };
 
 // ----------------- Layer Control -------------------
-L.control.layers(baseMaps, overlays).addTo(map);
+// L.control.layers(baseMaps, overlays).addTo(map);
+
+L.control.layers(baseMaps, overlayMaps, {
+  collapsed: false
+}).addTo(map);
 
 // --------------------------------- Add GeoJSON data to the map ---------------------------
 // Create earthquakes layer from geoJSON data
